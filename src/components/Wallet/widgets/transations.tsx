@@ -18,83 +18,12 @@ const filters = [
   },
 ];
 
-export function Transations() {
-  const data = [
-    {
-      id: "1-INTER",
-      name: "Nome da Transação",
-      description: "Descrição da transação",
-      value: 12.9,
-      category: "Alimento",
-      data: "04/04/2026",
-      bank: "inter",
-    },
-    {
-      id: "2-NU",
-      name: "Nome da Transação",
-      description: "Descrição da transação",
-      value: -12.9,
-      category: "Alimento",
-      data: "03/04/2026",
-      bank: "nubank",
-    },
-        {
-      id: "2-NU",
-      name: "Nome da Transação",
-      description: "Descrição da transação",
-      value: -12.9,
-      category: "Alimento",
-      data: "03/04/2026",
-      bank: "nubank",
-    },
-        {
-      id: "2-NU",
-      name: "Nome da Transação",
-      description: "Descrição da transação",
-      value: -12.9,
-      category: "Alimento",
-      data: "03/04/2026",
-      bank: "nubank",
-    },
+type props ={
+  data : any[]
+}
 
-        {
-      id: "2-NU",
-      name: "Nome da Transação",
-      description: "Descrição da transação",
-      value: -12.9,
-      category: "Alimento",
-      data: "03/04/2026",
-      bank: "nubank",
-    },
-        {
-      id: "2-NU",
-      name: "Nome da Transação",
-      description: "Descrição da transação",
-      value: -12.9,
-      category: "Alimento",
-      data: "03/04/2026",
-      bank: "nubank",
-    },
+export function Transations({data}: props) {
 
-        {
-      id: "2-NU",
-      name: "Nome da Transação",
-      description: "Descrição da transação",
-      value: -12.9,
-      category: "Alimento",
-      data: "03/04/2026",
-      bank: "nubank",
-    },
-        {
-      id: "2-NU",
-      name: "Nome da Transação",
-      description: "Descrição da transação",
-      value: -12.9,
-      category: "Alimento",
-      data: "03/04/2026",
-      bank: "nubank",
-    },
-  ];
 
   return (
     <View className="mt-5">
@@ -128,12 +57,14 @@ export function Transations() {
         </Pressable>
       </View>
       
-      <View className="bg-card-background border border-b border-strong-border rounded-xl pt-3 max-h-80 overflow-hidden">
+      <View className="bg-card-background border border-b border-strong-border rounded-xl pt-1.5 max-h-80 overflow-hidden">
         <FlatList
         data={data}
         showsVerticalScrollIndicator={false}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <TransationCard transaction={item} />}
+        keyExtractor={(_, i) => i.toString()}
+        renderItem={({ item }) => 
+          <TransationCard transaction={item} />
+        }
         ></FlatList>
         <Pressable className="mx-6 mb-1.5 py-1 bg-input-background rounded-full border border-input-border flex items-center justify-center">
           <Text className="text-main-text font-regular">Adicionar transação</Text>

@@ -1,45 +1,53 @@
-function parseAmount(value: any) {
-  if (!value) return 0;
+export function processCSV(fileName: string, rows: string[][]) {
+  const resultados: any[] = [];
 
-  return Number(
-    String(value)
-      .replace(/\./g, "")
-      .replace(",", ".")
-  );
-}
+  const limpar = (texto: string) => {
+    if (!texto) return "";
+    return texto.replace(/"/g, "").replace(/,$/, "").trim();
+  };
 
-export function parseBancoBrasil(data: any[]) {
-  return data
-    .filter((item) => item["Tipo Lançamento"]) // remove saldo
-    .map((item) => {
-      const isEntrada = item["Tipo Lançamento"] === "Entrada";
+  function parseAmount(value: any) {
+    if (!value) return 0;
 
-      const value = parseAmount(item["Valor"]);
+    return Number(String(value).replace(/\./g, "").replace(",", "."));
+  }
 
-      return {
-        amount: isEntrada ? value : -value,
-        description: item["Lançamento"],
-        date: item["Data"],
-      };
-    });
-}
+  rows.forEach((row) => {
+    let data, identificador, transacao, detalhes, valor, tipo, banco;
 
-export function normalizeCSV(data: any[]) {
-  return data.map((item) => ({
-    amount: parseAmount(
-      item.valor || item.Valor || item.amount
-    ),
+    if (fileName.startsWith("NU_")) {
+      banco = "nubank";
+      data = limpar(row[0]);
+      identificador = limpar(row[2]);
+      valor = (parseAmount(limpar(row[1])) / 1000);
+      transacao = "Pix/Transferência";
+      detalhes = limpar(row[3]);
+      tipo = valor < 0 ? "Saída" : "Entrada";
+    } else {
+      banco = "bb";
+      data = limpar(row[0]);
+      identificador = Math.random()*100
+      transacao = limpar(row[1]);
+      detalhes = limpar(row[2]);
+      valor = parseAmount(limpar(row[4]));
+      tipo = limpar(row[5]);
+    }
 
-    description:
-      item.descricao ||
-      item.Descrição ||
-      item.description ||
-      "Transação",
+    const ehCabecalho = data?.toLowerCase().includes("data");
+    const ehSaldo = transacao?.toLowerCase().includes("saldo anterior");
 
-    date:
-      item.data ||
-      item.Data ||
-      item.date ||
-      "",
-  }));
+    if ( data && data.includes("/") && !ehCabecalho && !ehSaldo && transacao !== "Saldo do dia" && transacao !== "S A L D O") {
+      resultados.push({
+        banco: banco,
+        data: data,
+        transacao: transacao,
+        detalhes: detalhes,
+        valor: valor,
+        tipo: tipo,
+        id: identificador,
+      });
+    }
+  });
+
+  return resultados;
 }

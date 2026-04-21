@@ -1,6 +1,6 @@
 import { colors } from "@/src/theme/colors";
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, View, Text } from "react-native";
+import { Pressable, View } from "react-native";
 
 type ScreenName = typeof tabs[number]["name"];
 

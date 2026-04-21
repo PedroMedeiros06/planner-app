@@ -1,7 +1,7 @@
 import * as DocumentPicker from "expo-document-picker";
 import Papa from "papaparse";
 
-export async function pickCSV() {
+export async function pickAndParseCSV() {
   const result = await DocumentPicker.getDocumentAsync({
     type: "*/*",
   });
@@ -11,12 +11,22 @@ export async function pickCSV() {
   const file = result.assets[0];
 
   const response = await fetch(file.uri);
-  const text = await response.text();
+  const buffer = await response.arrayBuffer();
 
-  const parsed = Papa.parse(text, {
-    header: true,
+  let text;
+
+  if (file.name.includes("NU_")) {
+    text = new TextDecoder("utf-8").decode(buffer);
+  } else {
+    text = new TextDecoder("iso-8859-1").decode(buffer);
+  }
+
+  const parsed = Papa.parse<string[]>(text, {
     skipEmptyLines: true,
   });
 
-  return parsed.data;
+  return {
+    fileName: file.name,
+    rows: parsed.data,
+  };
 }

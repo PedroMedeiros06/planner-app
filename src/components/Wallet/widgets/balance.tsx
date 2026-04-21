@@ -7,11 +7,18 @@ import { hexToRgba } from "@/src/utils/hexToRgba";
 import { useState } from "react";
 
 import { formatCurrency } from "@/src/utils/formatCurrency";
+import { pickAndParseCSV } from "@/src/utils/pickCsv";
+import { processCSV } from "@/src/utils/parseCsv";
+import { saveTransactions, loadTransactions } from "@/src/utils/data";
+
 
 const saldo = 45678.9;
 
+type props = {
+  setData: React.Dispatch<React.SetStateAction<any[]>>
+}
 
-export function Balance() {
+export function Balance({setData}: props) {
   const [isVisible, setVisible] = useState(true);
   const [ModalVisible, setModalVisible] = useState(false);
   const [selectedBanks, setSelectedBanks] = useState<string[]>([]);
@@ -21,6 +28,18 @@ export function Balance() {
       prev.includes(id) ? prev.filter((b) => b !== id) : [...prev, id],
     );
   }
+
+  async function handleImport() {
+  const raw = await pickAndParseCSV();
+  if (!raw) return;
+
+  const parsed = processCSV(raw.fileName, raw.rows);
+
+  await saveTransactions(parsed);
+
+  const updated = await loadTransactions();
+  setData(updated);
+}
 
   return (
     <View className="w-full bg-card-background border border-strong-border rounded-2xl px-4 py-4">
@@ -44,7 +63,7 @@ export function Balance() {
         </Text>
 
         <Pressable className="ml-auto flex flex-row items-center bg-input-background py-1 px-2.5 rounded-full shrink-0"
-        onPress={() => setModalVisible(!ModalVisible)}>
+        onPress={() => handleImport()}>
           <Feather name="upload" size={16} color={colors["main-text"]} />
           <Text className="text-main-text ml-2 font-regular">Importar</Text>
         </Pressable>

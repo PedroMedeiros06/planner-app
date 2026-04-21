@@ -6,13 +6,13 @@ import { banks } from "@/src/infos/banks";
 import { hexToRgba } from "@/src/utils/hexToRgba";
 
 type Transaction = {
-  name: string;
-  description: string;
+  transacao: string;
+  detalhes: string;
   id: string;
-  value: number;
+  valor: number;
   category: string;
   data: string;
-  bank: string
+  banco: string
 };
 
 type Props = {
@@ -20,7 +20,10 @@ type Props = {
 };
 
 export function TransationCard({ transaction }: Props) {
-  const bank = banks.find((b) => b.id === transaction.bank);
+
+  console.log("transação card ",transaction.transacao)
+
+  const bank = banks.find((b) => b.id === transaction.banco);
 
   return (
     <View className="px-2 w-full mb-3 flex flex-row items-center">
@@ -33,11 +36,11 @@ export function TransationCard({ transaction }: Props) {
       {/* Texto */}
       <View className="flex-shrink max-w-[45%]">
         <Text className="text-main-text text-sm" numberOfLines={1}>
-          {transaction.name}
+          {transaction.transacao}
         </Text>
 
         <Text className="text-second-text text-xs" numberOfLines={1}>
-          {transaction.description}
+          {transaction.detalhes}
         </Text>
       </View>
 
@@ -57,12 +60,12 @@ export function TransationCard({ transaction }: Props) {
       <View className="ml-auto items-end">
         <Text
           className={`text-sm ${
-            transaction.value > 0
+            transaction.valor > 0
               ? "text-sucess-color"
               : "text-error-color"
           }`}
         >
-          {formatCurrency(transaction.value)}
+          {formatCurrency(transaction.valor)}
         </Text>
 
         <Text className="text-second-text text-xs">
