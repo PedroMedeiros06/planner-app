@@ -1,27 +1,35 @@
 import { Feather } from "@expo/vector-icons";
-import { Modal, Pressable, ScrollView, Text, View  } from "react-native";
+import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 
 import { banks } from "@/src/infos/banks";
 import { colors } from "@/src/theme/colors";
 import { hexToRgba } from "@/src/utils/hexToRgba";
 import { useState } from "react";
 
+import { loadTransactions, saveTransactions } from "@/src/utils/data";
 import { formatCurrency } from "@/src/utils/formatCurrency";
-import { pickAndParseCSV } from "@/src/utils/pickCsv";
 import { processCSV } from "@/src/utils/parseCsv";
-import { saveTransactions, loadTransactions } from "@/src/utils/data";
+import { pickAndParseCSV } from "@/src/utils/pickCsv";
 
+import { useError } from "@/src/contexts/errorContext";
 
 const saldo = 45678.9;
 
-type props = {
-  setData: React.Dispatch<React.SetStateAction<any[]>>
-}
+type BankId = (typeof banks)[number]["id"];
 
-export function Balance({setData}: props) {
+type props = {
+  setData: React.Dispatch<React.SetStateAction<any[]>>;
+};
+
+export function Balance({ setData }: props) {
   const [isVisible, setVisible] = useState(true);
   const [ModalVisible, setModalVisible] = useState(false);
   const [selectedBanks, setSelectedBanks] = useState<string[]>([]);
+
+  const { showError } = useError();
+
+const [selectedBank, setSelectedBank] = useState<BankId | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   function toggleBank(id: string) {
     setSelectedBanks((prev) =>
@@ -30,16 +38,22 @@ export function Balance({setData}: props) {
   }
 
   async function handleImport() {
-  const raw = await pickAndParseCSV();
-  if (!raw) return;
 
-  const parsed = processCSV(raw.fileName, raw.rows);
+    if (!selectedBank) {
+      showError("Você deve selecionar um banco antes!")
+      return false
+    }
 
-  await saveTransactions(parsed);
+    const raw = await pickAndParseCSV();
+    if (!raw) return;
 
-  const updated = await loadTransactions();
-  setData(updated);
-}
+    const parsed = processCSV(raw.fileName, raw.rows);
+
+    await saveTransactions(parsed);
+
+    const updated = await loadTransactions();
+    setData(updated);
+  }
 
   return (
     <View className="w-full bg-card-background border border-strong-border rounded-2xl px-4 py-4">
@@ -47,13 +61,16 @@ export function Balance({setData}: props) {
         <Text className="text-main-text font-regular text-lg">Saldo Total</Text>
 
         <Pressable onPress={() => setVisible(!isVisible)}>
-          <Feather name={isVisible ? "eye" : "eye-off"} size={16} color={colors["main-text"]} />
+          <Feather
+            name={isVisible ? "eye" : "eye-off"}
+            size={16}
+            color={colors["main-text"]}
+          />
         </Pressable>
       </View>
 
       <View className="flex flex-row items-center mb-3">
-
-      <Text
+        <Text
           className="text-main-text text-3xl font-semibold tracking-tight flex-shrink max-w-[65%]"
           numberOfLines={1}
         >
@@ -62,12 +79,13 @@ export function Balance({setData}: props) {
             : formatCurrency(saldo).replace(/\d/g, "*")}
         </Text>
 
-        <Pressable className="ml-auto flex flex-row items-center bg-input-background py-1 px-2.5 rounded-full shrink-0"
-        onPress={() => handleImport()}>
+        <Pressable
+          className="ml-auto flex flex-row items-center bg-input-background py-1 px-2.5 rounded-full shrink-0"
+          onPress={() => setModalVisible(true)}
+        >
           <Feather name="upload" size={16} color={colors["main-text"]} />
           <Text className="text-main-text ml-2 font-regular">Importar</Text>
         </Pressable>
-
       </View>
 
       <ScrollView
@@ -96,7 +114,7 @@ export function Balance({setData}: props) {
       </ScrollView>
 
       <Modal visible={ModalVisible} transparent>
-          <View className="absolute top-0 left-0 w-full h-full z-50 justify-center items-center">
+        <View className="absolute top-0 left-0 w-full h-full z-50 justify-center items-center">
           {/* fundo escuro */}
           <Pressable
             className="absolute w-full h-full bg-black/50"
@@ -109,16 +127,47 @@ export function Balance({setData}: props) {
               Importar Extrato
             </Text>
 
-            <Pressable className="bg-input-background p-3 rounded-lg mb-2">
-              <Text className="text-main-text">Escolher banco</Text>
+            <Pressable
+              className="bg-input-background p-3 rounded-lg mb-2"
+              onPress={() => setDropdownOpen(!dropdownOpen)}
+            >
+              <Text className="text-main-text">
+                {selectedBank
+                  ? banks.find((b) => b.id === selectedBank)?.name
+                  : "Selecione um banco"}
+              </Text>
             </Pressable>
 
-            <Pressable className="bg-input-background p-3 rounded-lg">
-              <Text className="text-main-text">Selecionar arquivo CSV</Text>
+            {dropdownOpen && (
+              <View className="bg-card-background border border-strong-border rounded-lg mb-3 overflow-hidden">
+                {banks.map((bank) => (
+                  <Pressable
+                    key={bank.id}
+                    onPress={() => {
+                      setSelectedBank(bank.id);
+                      setDropdownOpen(false);
+                    }}
+                    className="p-3"
+                    style={{
+                      backgroundColor:
+                        selectedBank === bank.id
+                          ? hexToRgba(bank.color, 0.3)
+                          : "transparent",
+                    }}
+                  >
+                    <Text className="text-main-text">{bank.name}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
+
+            <Pressable className="bg-input-background p-3 rounded-lg"
+            onPress={handleImport}>
+              <Text className="text-main-text">Selecionar arquivo .CSV</Text>
             </Pressable>
           </View>
         </View>
-        </Modal>
+      </Modal>
     </View>
   );
 }

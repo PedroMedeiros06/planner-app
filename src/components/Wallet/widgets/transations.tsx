@@ -3,6 +3,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { FlatList, Pressable, Text, View } from "react-native";
 import { TransationCard } from "../TransationCard";
 
+import { useError } from "@/src/contexts/errorContext";
+
 const filters = [
   {
     id: "Banks",
@@ -24,6 +26,7 @@ type props ={
 
 export function Transations({data}: props) {
 
+  const { showError } = useError();
 
   return (
     <View className="mt-5">
@@ -66,7 +69,10 @@ export function Transations({data}: props) {
           <TransationCard transaction={item} />
         }
         ></FlatList>
-        <Pressable className="mx-6 mb-1.5 py-1 bg-input-background rounded-full border border-input-border flex items-center justify-center">
+        <Pressable className="mx-6 mb-1.5 py-1 bg-input-background rounded-full border border-input-border flex items-center justify-center"
+        onPress={() => {
+          showError("Não foi possivel criar transações")
+        }}>
           <Text className="text-main-text font-regular">Adicionar transação</Text>
         </Pressable>
       </View>

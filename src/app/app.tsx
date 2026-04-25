@@ -15,7 +15,7 @@ const Screens = {
   user: Home,
 };
 
-export default function Index() {
+export default function appIndex() {
   const insets = useSafeAreaInsets();
   const [activeScreen, setScreen] = useState<keyof typeof Screens>("wallet");
 

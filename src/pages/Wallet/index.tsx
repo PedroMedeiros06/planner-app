@@ -1,12 +1,22 @@
+//Importantes
+import { useState, useEffect } from "react";
+import { Text, View } from "react-native";
+
+// Components
 import { Balance } from "@/src/components/Wallet/widgets/balance";
 import { FinancialReports } from "@/src/components/Wallet/widgets/financialReports";
 import { Transations } from "@/src/components/Wallet/widgets/transations";
-import { useState, useEffect } from "react";
-import { Text, View } from "react-native";
+
+// Utils
 import { loadTransactions } from "@/src/utils/data";
+
+// Contexts
+import { useError } from "@/src/contexts/errorContext";
 
 export function Wallet() {
   const [data, setData] = useState<any[]>([]);
+
+  const { showError } = useError();
 
   useEffect(() => {
     async function init() {
