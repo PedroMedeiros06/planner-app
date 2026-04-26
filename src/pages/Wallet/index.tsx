@@ -27,8 +27,6 @@ export function Wallet() {
     init();
   }, []);
 
-  console.log(data);
-
   return (
     <View className="flex flex-col">
       <Text className="text-main-text font-semibold text-xl mb-3">

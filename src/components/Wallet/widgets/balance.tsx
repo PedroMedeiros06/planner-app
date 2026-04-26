@@ -1,32 +1,32 @@
 // Important
 import { Feather } from "@expo/vector-icons";
+import { useEffect, useState } from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
-import { useState } from "react";
 
 // Functions
-import { pickAndParseCSV } from "@/src/utils/pickCsv";
-import { loadTransactions, saveTransactions } from "@/src/utils/data";
-import { formatCurrency } from "@/src/utils/formatCurrency";
-import { processCSV } from "@/src/utils/parses/index";
 import { banks } from "@/src/infos/banks";
 import { colors } from "@/src/theme/colors";
+import { loadTransactions, saveTransactions } from "@/src/utils/data";
+import { formatCurrency } from "@/src/utils/formatCurrency";
 import { hexToRgba } from "@/src/utils/hexToRgba";
+import { processCSV } from "@/src/utils/parses/index";
+import { pickAndParseCSV } from "@/src/utils/pickCsv";
 
 //  Contexts
 import { useError } from "@/src/contexts/errorContext";
 
 // Types
+import { getSaldo } from "@/src/utils/getSaldo";
 import { BankId } from "@/src/utils/parses/index";
 
 // Code
-
-const saldo = 45678.9;
 
 type props = {
   setData: React.Dispatch<React.SetStateAction<any[]>>;
 };
 
 export function Balance({ setData }: props) {
+  const [saldo, setSaldo] = useState(0);
   const [isVisible, setVisible] = useState(true);
   const [ModalVisible, setModalVisible] = useState(false);
   const [selectedBanks, setSelectedBanks] = useState<string[]>([]);
@@ -42,10 +42,19 @@ export function Balance({ setData }: props) {
     );
   }
 
+  useEffect(() => {
+    async function load() {
+      const value = await getSaldo(selectedBanks);
+      setSaldo(value);
+    }
+
+    load();
+  }, [selectedBanks]);
+
   async function handleImport() {
     if (!selectedBank) {
       showError("Você deve selecionar um banco antes!");
-      return false;
+      return;
     }
 
     const raw = await pickAndParseCSV(selectedBank);
@@ -56,8 +65,12 @@ export function Balance({ setData }: props) {
     await saveTransactions(parsed);
 
     const updated = await loadTransactions();
-    setModalVisible(false);
     setData(updated);
+
+    const novoSaldo = await getSaldo(selectedBanks);
+    setSaldo(novoSaldo);
+
+    setModalVisible(false);
   }
 
   return (

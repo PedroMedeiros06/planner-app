@@ -5,7 +5,7 @@ import { Text, View } from "react-native";
 import { banks } from "@/src/infos/banks";
 import { hexToRgba } from "@/src/utils/hexToRgba";
 
-type Transaction = {
+export type TransactionType = {
   transacao: string;
   detalhes: string;
   id: string;
@@ -16,7 +16,7 @@ type Transaction = {
 };
 
 type Props = {
-  transaction: Transaction;
+  transaction: TransactionType;
 };
 
 export function TransationCard({ transaction }: Props) {
