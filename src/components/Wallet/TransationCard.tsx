@@ -21,8 +21,6 @@ type Props = {
 
 export function TransationCard({ transaction }: Props) {
 
-  console.log("transação card ",transaction.transacao)
-
   const bank = banks.find((b) => b.id === transaction.banco);
 
   return (

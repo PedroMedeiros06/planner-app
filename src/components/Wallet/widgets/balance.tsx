@@ -1,21 +1,26 @@
+// Important
 import { Feather } from "@expo/vector-icons";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
+import { useState } from "react";
 
+// Functions
+import { pickAndParseCSV } from "@/src/utils/pickCsv";
+import { loadTransactions, saveTransactions } from "@/src/utils/data";
+import { formatCurrency } from "@/src/utils/formatCurrency";
+import { processCSV } from "@/src/utils/parses/index";
 import { banks } from "@/src/infos/banks";
 import { colors } from "@/src/theme/colors";
 import { hexToRgba } from "@/src/utils/hexToRgba";
-import { useState } from "react";
 
-import { loadTransactions, saveTransactions } from "@/src/utils/data";
-import { formatCurrency } from "@/src/utils/formatCurrency";
-import { processCSV } from "@/src/utils/parseCsv";
-import { pickAndParseCSV } from "@/src/utils/pickCsv";
-
+//  Contexts
 import { useError } from "@/src/contexts/errorContext";
 
-const saldo = 45678.9;
+// Types
+import { BankId } from "@/src/utils/parses/index";
 
-type BankId = (typeof banks)[number]["id"];
+// Code
+
+const saldo = 45678.9;
 
 type props = {
   setData: React.Dispatch<React.SetStateAction<any[]>>;
@@ -28,7 +33,7 @@ export function Balance({ setData }: props) {
 
   const { showError } = useError();
 
-const [selectedBank, setSelectedBank] = useState<BankId | null>(null);
+  const [selectedBank, setSelectedBank] = useState<BankId | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   function toggleBank(id: string) {
@@ -38,20 +43,20 @@ const [selectedBank, setSelectedBank] = useState<BankId | null>(null);
   }
 
   async function handleImport() {
-
     if (!selectedBank) {
-      showError("Você deve selecionar um banco antes!")
-      return false
+      showError("Você deve selecionar um banco antes!");
+      return false;
     }
 
-    const raw = await pickAndParseCSV();
+    const raw = await pickAndParseCSV(selectedBank);
     if (!raw) return;
 
-    const parsed = processCSV(raw.fileName, raw.rows);
+    const parsed = processCSV(selectedBank, raw.rows);
 
     await saveTransactions(parsed);
 
     const updated = await loadTransactions();
+    setModalVisible(false);
     setData(updated);
   }
 
@@ -161,8 +166,10 @@ const [selectedBank, setSelectedBank] = useState<BankId | null>(null);
               </View>
             )}
 
-            <Pressable className="bg-input-background p-3 rounded-lg"
-            onPress={handleImport}>
+            <Pressable
+              className="bg-input-background p-3 rounded-lg"
+              onPress={handleImport}
+            >
               <Text className="text-main-text">Selecionar arquivo .CSV</Text>
             </Pressable>
           </View>
