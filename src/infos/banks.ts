@@ -1,4 +1,4 @@
-import { BankId } from "@/src/utils/parses";
+import { BankId } from "@/src/utils/wallet/parses";
 
 export const banks: {
   id: BankId;

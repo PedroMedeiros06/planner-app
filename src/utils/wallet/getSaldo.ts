@@ -1,15 +1,13 @@
-import { loadTransactions } from "./data";
+import { loadTransactions } from "../data";
 
-import { TransactionType } from "../components/Wallet/TransationCard";
+import { TransactionType } from "../../components/Wallet/TransationCard";
 
 export async function getSaldo(selectedBanks?: string[]) {
   const transactions = (await loadTransactions()) || [];
 
   return transactions
     .filter((t: TransactionType) =>
-      selectedBanks?.length
-        ? selectedBanks.includes(t.banco)
-        : true
+      selectedBanks?.length ? selectedBanks.includes(t.banco) : true,
     )
     .reduce((acc: number, t: TransactionType) => {
       const value = Number(t.valor);

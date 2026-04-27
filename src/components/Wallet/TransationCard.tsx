@@ -1,9 +1,9 @@
+import { banks } from "@/src/infos/banks";
 import { colors } from "@/src/theme/colors";
-import { formatCurrency } from "@/src/utils/formatCurrency";
+import { hexToRgba } from "@/src/utils/hexToRgba";
+import { formatCurrency } from "@/src/utils/wallet/formatCurrency";
 import { Ionicons } from "@expo/vector-icons";
 import { Text, View } from "react-native";
-import { banks } from "@/src/infos/banks";
-import { hexToRgba } from "@/src/utils/hexToRgba";
 
 export type TransactionType = {
   transacao: string;
@@ -12,7 +12,7 @@ export type TransactionType = {
   valor: number;
   category: string;
   data: string;
-  banco: string
+  banco: string;
 };
 
 type Props = {
@@ -20,12 +20,10 @@ type Props = {
 };
 
 export function TransationCard({ transaction }: Props) {
-
   const bank = banks.find((b) => b.id === transaction.banco);
 
   return (
     <View className="px-2 w-full mb-3 flex flex-row items-center">
-
       {/* Ícone */}
       <View className="px-2 py-2 bg-input-background border border-input-border justify-center items-center rounded-lg mr-2">
         <Ionicons name="car" color={colors["main-text"]} size={24} />
@@ -58,19 +56,14 @@ export function TransationCard({ transaction }: Props) {
       <View className="ml-auto items-end">
         <Text
           className={`text-sm ${
-            transaction.valor > 0
-              ? "text-sucess-color"
-              : "text-error-color"
+            transaction.valor > 0 ? "text-sucess-color" : "text-error-color"
           }`}
         >
           {formatCurrency(transaction.valor)}
         </Text>
 
-        <Text className="text-second-text text-xs">
-          {transaction.data}
-        </Text>
+        <Text className="text-second-text text-xs">{transaction.data}</Text>
       </View>
-
     </View>
   );
 }

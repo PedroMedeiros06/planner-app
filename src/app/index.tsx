@@ -6,18 +6,20 @@ import { Footer } from "../components/Footer";
 
 import { Home } from "../pages/Home";
 import { Wallet } from "../pages/Wallet";
+import { UserCalendar } from "../pages/Calendar";
+
 import { useAppFonts } from "../theme/fonts";
 
 const Screens = {
   home: Home,
-  calendar: Home,
+  calendar: UserCalendar,
   wallet: Wallet,
   user: Home,
 };
 
 export default function appIndex() {
   const insets = useSafeAreaInsets();
-  const [activeScreen, setScreen] = useState<keyof typeof Screens>("wallet");
+  const [activeScreen, setScreen] = useState<keyof typeof Screens>("calendar");
 
   const [loaded] = useAppFonts();
 

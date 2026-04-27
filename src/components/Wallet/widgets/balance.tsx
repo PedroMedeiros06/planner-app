@@ -7,17 +7,17 @@ import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { banks } from "@/src/infos/banks";
 import { colors } from "@/src/theme/colors";
 import { loadTransactions, saveTransactions } from "@/src/utils/data";
-import { formatCurrency } from "@/src/utils/formatCurrency";
 import { hexToRgba } from "@/src/utils/hexToRgba";
-import { processCSV } from "@/src/utils/parses/index";
-import { pickAndParseCSV } from "@/src/utils/pickCsv";
+import { formatCurrency } from "@/src/utils/wallet/formatCurrency";
+import { processCSV } from "@/src/utils/wallet/parses/index";
+import { pickAndParseCSV } from "@/src/utils/wallet/pickCsv";
 
 //  Contexts
 import { useError } from "@/src/contexts/errorContext";
 
 // Types
-import { getSaldo } from "@/src/utils/getSaldo";
-import { BankId } from "@/src/utils/parses/index";
+import { getSaldo } from "@/src/utils/wallet/getSaldo";
+import { BankId } from "@/src/utils/wallet/parses/index";
 
 // Code
 
