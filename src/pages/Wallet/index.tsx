@@ -1,11 +1,11 @@
 //Importantes
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 
 // Components
-import { Balance } from "@/src/components/Wallet/widgets/balance";
-import { FinancialReports } from "@/src/components/Wallet/widgets/financialReports";
-import { Transations } from "@/src/components/Wallet/widgets/transations";
+import { Balance } from "./widgets/balance";
+import { FinancialReports } from "./widgets/financialReports"
+import { Transations } from "./widgets/transations";
 
 // Utils
 import { loadTransactions } from "@/src/utils/data";
@@ -34,7 +34,7 @@ export function Wallet() {
       </Text>
       <Balance setData={setData} />
       <Transations data={data} />
-      <FinancialReports />
+      <FinancialReports setData={setData} />
     </View>
   );
 }

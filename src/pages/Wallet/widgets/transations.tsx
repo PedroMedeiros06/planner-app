@@ -20,12 +20,11 @@ const filters = [
   },
 ];
 
-type props ={
-  data : any[]
-}
+type props = {
+  data: any[];
+};
 
-export function Transations({data}: props) {
-
+export function Transations({ data }: props) {
   const { showError } = useError();
 
   return (
@@ -59,21 +58,23 @@ export function Transations({data}: props) {
           ></Ionicons>
         </Pressable>
       </View>
-      
+
       <View className="bg-card-background border border-b border-strong-border rounded-xl pt-1.5 max-h-80 overflow-hidden">
         <FlatList
-        data={data}
-        showsVerticalScrollIndicator={false}
-        keyExtractor={(_, i) => i.toString()}
-        renderItem={({ item }) => 
-          <TransationCard transaction={item} />
-        }
+          data={data}
+          showsVerticalScrollIndicator={false}
+          keyExtractor={(_, i) => i.toString()}
+          renderItem={({ item }) => <TransationCard transaction={item} />}
         ></FlatList>
-        <Pressable className="mx-6 mb-1.5 py-1 bg-input-background rounded-full border border-input-border flex items-center justify-center"
-        onPress={() => {
-          showError("Não foi possivel criar transações")
-        }}>
-          <Text className="text-main-text font-regular">Adicionar transação</Text>
+        <Pressable
+          className="mx-6 mb-1.5 py-1 bg-input-background rounded-full border border-input-border flex items-center justify-center"
+          onPress={() => {
+            showError("Não foi possivel criar transações");
+          }}
+        >
+          <Text className="text-main-text font-regular">
+            Adicionar transação
+          </Text>
         </Pressable>
       </View>
     </View>

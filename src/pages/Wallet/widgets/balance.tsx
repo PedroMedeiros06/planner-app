@@ -49,7 +49,7 @@ export function Balance({ setData }: props) {
     }
 
     load();
-  }, [selectedBanks]);
+  }, [selectedBanks, saldo]);
 
   async function handleImport() {
     if (!selectedBank) {
@@ -71,6 +71,8 @@ export function Balance({ setData }: props) {
     setSaldo(novoSaldo);
 
     setModalVisible(false);
+    setDropdownOpen(false);
+    setSelectedBank(null);
   }
 
   return (
@@ -136,7 +138,7 @@ export function Balance({ setData }: props) {
           {/* fundo escuro */}
           <Pressable
             className="absolute w-full h-full bg-black/50"
-            onPress={() => setModalVisible(false)}
+            onPress={() => {setModalVisible(false); setDropdownOpen(false); setSelectedBank(null); }}
           />
 
           {/* modal */}

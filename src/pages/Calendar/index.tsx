@@ -20,7 +20,7 @@ export function UserCalendar() {
         dots: [
           {
             key: "holiday",
-            color: colors["input-border"],
+            color: colors["error-color"],
           },
         ],
       };

@@ -28,3 +28,7 @@ export async function loadHolidays(year: number) {
   const data = await AsyncStorage.getItem(HOLIDAY_KEY(year));
   return data ? JSON.parse(data) : null;
 }
+
+export async function resetData() {
+  await AsyncStorage.removeItem("transactions");
+}
