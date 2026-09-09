@@ -1,7 +1,7 @@
 import { moderateScale } from "@/utils/scale";
 import { FormatToCurrency } from "@/utils/formatNumber";
 import { Ionicons } from "@expo/vector-icons";
-import { colors } from "@/theme/colors";
+import { useThemeColors } from "@/theme/useThemeColors";
 import { View, Text, Pressable, ActivityIndicator } from "react-native";
 import { memo, useEffect, useMemo, useState } from "react";
 import { obterResumoPrevistoDoMes } from "@/database/orcamentoQueries";
@@ -13,6 +13,7 @@ type Props = {
 };
 
 function OrcamentoMensalBase({ onEditarOrcamento }: Props) {
+  const colors = useThemeColors();
   const cardTitleSize = moderateScale(15);
   const labelSize = moderateScale(12);
   const percentSize = moderateScale(14);

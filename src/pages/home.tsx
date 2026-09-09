@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View, Pressable } from "react-native";
 import { moderateScale, scale } from "@/utils/scale";
-import { colors } from "@/theme/colors";
+import { useThemeColors } from "@/theme/useThemeColors";
 import { Ionicons } from "@expo/vector-icons";
 import { Resumo } from "@/components/HomeComp/Resumo";
 import { UltimasTransacoes } from "@/components/HomeComp/UltimasTransacoes";
@@ -11,8 +11,11 @@ import { SeletorPeriodoPersonalizado } from "@/components/common/SeletorPeriodoP
 import { useFiltrosTransacao } from "@/hooks/useFiltrosTransacao";
 import { listarBancos, Banco } from "@/database/queries";
 import { usePerfil } from "@/context/PerfilContext";
+import { useNavigation } from "@/context/NavigationContext";
+import { useNotificacoes } from "@/context/NotificacoesContext";
 
 export function Home() {
+  const colors = useThemeColors();
   const titleSize = moderateScale(22);
   const subtitleSize = moderateScale(12);
   const avatarSize = moderateScale(40);
@@ -21,6 +24,9 @@ export function Home() {
   // refetch nem delay a cada vez que a Home remonta.
   const { perfil } = usePerfil();
   const nomeUsuario = perfil.nome || "Usuário";
+
+  const { navigate } = useNavigation();
+  const { naoLidas } = useNotificacoes();
 
   // Estado de filtros LOCAL desta tela — independente do Planejamento
   // (ver decisão de escopo em useFiltrosTransacao.ts).
@@ -81,20 +87,46 @@ export function Home() {
             </Text>
           </View>
 
-          <View
+          <Pressable
+            onPress={() => navigate("notificacoes")}
             style={{
               width: avatarSize,
               height: avatarSize,
               borderRadius: avatarSize / 2,
             }}
-            className="bg-input-background border border-input-border/50 flex items-center justify-center"
+            className="bg-input-background border border-input-border/50 items-center justify-center active:opacity-70"
+            accessibilityRole="button"
+            accessibilityLabel={
+              naoLidas > 0
+                ? `Notificações, ${naoLidas} não lida${naoLidas > 1 ? "s" : ""}`
+                : "Notificações"
+            }
           >
             <Ionicons
               name="notifications-outline"
               color={colors["desactived-text"]}
               size={scale(16)}
             />
-          </View>
+            {naoLidas > 0 && (
+              <View
+                className="absolute bg-error-color rounded-full items-center justify-center border border-main-background"
+                style={{
+                  minWidth: scale(16),
+                  height: scale(16),
+                  paddingHorizontal: scale(3),
+                  top: -scale(2),
+                  right: -scale(2),
+                }}
+              >
+                <Text
+                  style={{ fontSize: scale(9), lineHeight: scale(12) }}
+                  className="text-white font-Inter-Bold"
+                >
+                  {naoLidas > 9 ? "9+" : naoLidas}
+                </Text>
+              </View>
+            )}
+          </Pressable>
         </View>
 
         {/* BODY */}

@@ -3,6 +3,7 @@ import {
   listarLembretes,
   inserirLembrete,
   atualizarLembrete,
+  atualizarNotificacaoIdLembrete,
   excluirLembrete,
   Lembrete,
   CamposLembrete,
@@ -16,6 +17,11 @@ type LembretesContextValue = {
   adicionarLembrete: (campos: CamposLembrete) => Promise<void>;
   editarLembrete: (id: string, campos: CamposLembrete) => Promise<void>;
   removerLembrete: (id: string) => Promise<void>;
+  // Reaplica o estado de notificação de TODOS os lembretes conforme
+  // `ativar`: true reagenda os com data/hora ainda no futuro; false
+  // cancela tudo que estiver agendado. Chamado pelo toggle global de
+  // notificações em Preferencias.tsx.
+  ressincronizarNotificacoes: (ativar: boolean) => Promise<void>;
 };
 
 const LembretesContext = createContext<LembretesContextValue | null>(null);
@@ -66,7 +72,8 @@ export function LembretesProvider({ children }: { children: ReactNode }) {
         campos.titulo,
         campos.descricao,
         campos.data,
-        campos.hora
+        campos.hora,
+        id
       );
 
       await inserirLembrete(id, campos, notificacaoId);
@@ -89,7 +96,8 @@ export function LembretesProvider({ children }: { children: ReactNode }) {
           campos.titulo,
           campos.descricao,
           campos.data,
-          campos.hora
+          campos.hora,
+          id
         );
 
         await atualizarLembrete(id, campos, novaNotificacaoId);
@@ -122,6 +130,38 @@ export function LembretesProvider({ children }: { children: ReactNode }) {
     [lembretes]
   );
 
+  const ressincronizarNotificacoes = useCallback(
+    async (ativar: boolean) => {
+      const agora = new Date();
+      const hojeIso = agora.toISOString().slice(0, 10);
+      const horaAgora = `${String(agora.getHours()).padStart(2, "0")}:${String(agora.getMinutes()).padStart(2, "0")}`;
+      const atualizacoes = new Map<string, string | null>();
+
+      for (const l of lembretes) {
+        if (ativar) {
+          const noFuturo = l.data > hojeIso || (l.data === hojeIso && l.hora > horaAgora);
+          if (!noFuturo || l.notificacaoId) continue;
+          const novoId = await agendarNotificacaoLembrete(l.titulo, l.descricao, l.data, l.hora, l.id);
+          if (novoId) atualizacoes.set(l.id, novoId);
+        } else {
+          if (!l.notificacaoId) continue;
+          await cancelarNotificacao(l.notificacaoId);
+          atualizacoes.set(l.id, null);
+        }
+      }
+
+      if (atualizacoes.size === 0) return;
+
+      for (const [id, notifId] of atualizacoes) {
+        await atualizarNotificacaoIdLembrete(id, notifId);
+      }
+      setLembretes((prev) =>
+        prev.map((l) => (atualizacoes.has(l.id) ? { ...l, notificacaoId: atualizacoes.get(l.id) ?? null } : l))
+      );
+    },
+    [lembretes]
+  );
+
   const value = useMemo(
     () => ({
       lembretes,
@@ -130,8 +170,9 @@ export function LembretesProvider({ children }: { children: ReactNode }) {
       adicionarLembrete,
       editarLembrete,
       removerLembrete,
+      ressincronizarNotificacoes,
     }),
-    [lembretes, carregando, erro, adicionarLembrete, editarLembrete, removerLembrete]
+    [lembretes, carregando, erro, adicionarLembrete, editarLembrete, removerLembrete, ressincronizarNotificacoes]
   );
 
   return <LembretesContext.Provider value={value}>{children}</LembretesContext.Provider>;

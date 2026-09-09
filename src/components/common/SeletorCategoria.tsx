@@ -1,4 +1,4 @@
-import { colors } from "@/theme/colors";
+import { useThemeColors } from "@/theme/useThemeColors";
 import { moderateScale } from "@/utils/scale";
 import { Ionicons } from "@expo/vector-icons";
 import { View, Text, Pressable, Modal, FlatList } from "react-native";
@@ -19,11 +19,12 @@ type Props = {
 
 type ItemLista = { id: CategoriaId | null; nome: string; icone: keyof typeof Ionicons.glyphMap; cor: string };
 
-const ITEM_SEM_CATEGORIA: ItemLista = {
+// A `cor` é resolvida dentro do componente (depende do tema atual); no
+// nível de módulo fica só a estrutura estável do item.
+const ITEM_SEM_CATEGORIA: Omit<ItemLista, "cor"> = {
   id: null,
   nome: "Sem categoria",
   icone: "help-circle-outline",
-  cor: colors["desactived-text"],
 };
 
 function SeletorCategoriaBase({
@@ -33,6 +34,7 @@ function SeletorCategoriaBase({
   permitirSemCategoria = true,
   categoriasOcultas,
 }: Props) {
+  const colors = useThemeColors();
   const labelSize = moderateScale(11);
   const valueSize = moderateScale(14);
   const itemTextSize = moderateScale(14);
@@ -48,7 +50,7 @@ function SeletorCategoriaBase({
       : CATEGORIAS;
 
   const itens: ItemLista[] = permitirSemCategoria
-    ? [ITEM_SEM_CATEGORIA, ...categoriasVisiveis]
+    ? [{ ...ITEM_SEM_CATEGORIA, cor: colors["desactived-text"] }, ...categoriasVisiveis]
     : [...categoriasVisiveis];
 
   const handleAbrir = useCallback(() => setAberto(true), []);

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ScrollView, Text, View, Pressable, FlatList } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { colors } from "@/theme/colors";
+import { useThemeColors } from "@/theme/useThemeColors";
 import { moderateScale } from "@/utils/scale";
 import { FormatToCurrency } from "@/utils/formatNumber";
 
@@ -40,6 +40,7 @@ const TransacaoItem = ({
   isLast: boolean;
   onLongPress: (transacao: Transacao) => void;
 }) => {
+  const colors = useThemeColors();
   const nomeSize = moderateScale(13);
   const subtituloSize = moderateScale(11);
   const valorSize = moderateScale(13);
@@ -95,6 +96,7 @@ const TransacaoItem = ({
 };
 
 export function Transferencias() {
+  const colors = useThemeColors();
   const titleSize = moderateScale(22);
   const subtitleSize = moderateScale(12);
   const emptyTitleSize = moderateScale(13);

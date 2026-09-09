@@ -1,4 +1,4 @@
-import { colors } from "@/theme/colors";
+import { useThemeColors } from "@/theme/useThemeColors";
 import { moderateScale } from "@/utils/scale";
 import { FormatToCurrency } from "@/utils/formatNumber";
 import { Ionicons } from "@expo/vector-icons";
@@ -36,6 +36,7 @@ const ItemLimite = memo(function ItemLimite({
   isLast: boolean;
   onPress: (limite: LimiteCategoria) => void;
 }) {
+  const colors = useThemeColors();
   const nomeSize = moderateScale(14);
   const limiteSize = moderateScale(11);
   const valorSize = moderateScale(13);
@@ -103,6 +104,7 @@ const ItemLimite = memo(function ItemLimite({
 });
 
 function CategoriasOrcamentoBase({ anoExibido, mesExibido, onAbrirNovoLimite, onEditarLimite }: Props) {
+  const colors = useThemeColors();
   const cardTitleSize = moderateScale(15);
   const actionTextSize = moderateScale(12);
   const emptySize = moderateScale(12);

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ScrollView, Text, View, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { colors } from "@/theme/colors";
+import { useThemeColors } from "@/theme/useThemeColors";
 import { moderateScale } from "@/utils/scale";
 
 import { PlanejamentoTabs, PlanejamentoTab } from "@/components/PlanejamentoComp/PlanejamentoTabs";
@@ -21,6 +21,7 @@ import { useNavigation } from "@/context/NavigationContext";
 import { listarBancos, Banco } from "@/database/queries";
 
 export function Planejamento() {
+  const colors = useThemeColors();
   const { navigate, params } = useNavigation();
 
   // Aba inicial: normalmente "Resumo", mas quem navega até aqui pode

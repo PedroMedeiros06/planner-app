@@ -1,4 +1,4 @@
-import { colors } from "@/theme/colors";
+import { useThemeColors } from "@/theme/useThemeColors";
 import { moderateScale } from "@/utils/scale";
 import { Ionicons } from "@expo/vector-icons";
 import { View, Text, Pressable } from "react-native";
@@ -31,6 +31,7 @@ function dataMesAnteriorIso(): string {
 }
 
 function ResumoBase() {
+  const colors = useThemeColors();
   const title = moderateScale(28);
   const subtilte = moderateScale(12);
 

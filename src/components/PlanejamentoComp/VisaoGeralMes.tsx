@@ -1,7 +1,7 @@
 import { moderateScale } from "@/utils/scale";
 import { FormatToCurrency } from "@/utils/formatNumber";
 import { Ionicons } from "@expo/vector-icons";
-import { colors } from "@/theme/colors";
+import { useThemeColors } from "@/theme/useThemeColors";
 import { View, Text, ActivityIndicator } from "react-native";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { calcularResumoReceitasDespesas } from "@/database/queries";
@@ -34,6 +34,7 @@ function paraIso(ano: number, mes: number, dia: number): string {
 }
 
 function VisaoGeralMesBase() {
+  const colors = useThemeColors();
   const cardTitleSize = moderateScale(15);
   const labelSize = moderateScale(11);
   const valueSize = moderateScale(16);

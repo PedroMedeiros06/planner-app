@@ -3,6 +3,7 @@ import {
   listarCompromissos,
   inserirCompromisso,
   atualizarCompromisso,
+  atualizarNotificacaoIdCompromisso,
   vincularCompromissoATransacao,
   desvincularCompromissoDaTransacao,
   excluirCompromisso,
@@ -23,6 +24,12 @@ type CompromissosContextValue = {
   pagarCompromissoComTransacao: (id: string, transacaoId: string) => Promise<void>;
   desmarcarPagoCompromisso: (id: string) => Promise<void>;
   removerCompromisso: (id: string) => Promise<void>;
+  // Reaplica o estado de notificação de TODOS os compromissos conforme
+  // `ativar`: true reagenda os pendentes com vencimento futuro; false
+  // cancela tudo que estiver agendado. Chamado pelo toggle global de
+  // notificações em Preferencias.tsx (a preferência em si é gravada
+  // lá).
+  ressincronizarNotificacoes: (ativar: boolean) => Promise<void>;
 };
 
 const CompromissosContext = createContext<CompromissosContextValue | null>(null);
@@ -66,7 +73,12 @@ export function CompromissosProvider({ children }: { children: ReactNode }) {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
     try {
-      const notificacaoId = await agendarNotificacaoVencimento(campos.nome, campos.valor, campos.dataVencimento);
+      const notificacaoId = await agendarNotificacaoVencimento(
+        campos.nome,
+        campos.valor,
+        campos.dataVencimento,
+        id
+      );
 
       await inserirCompromisso(id, campos, notificacaoId);
       setCompromissos((prev) =>
@@ -87,7 +99,12 @@ export function CompromissosProvider({ children }: { children: ReactNode }) {
 
       try {
         await cancelarNotificacao(compromissoAtual?.notificacaoId ?? null);
-        const novaNotificacaoId = await agendarNotificacaoVencimento(campos.nome, campos.valor, campos.dataVencimento);
+        const novaNotificacaoId = await agendarNotificacaoVencimento(
+          campos.nome,
+          campos.valor,
+          campos.dataVencimento,
+          id
+        );
 
         await atualizarCompromisso(id, campos, novaNotificacaoId);
         setCompromissos((prev) =>
@@ -154,6 +171,39 @@ export function CompromissosProvider({ children }: { children: ReactNode }) {
     [compromissos]
   );
 
+  const ressincronizarNotificacoes = useCallback(
+    async (ativar: boolean) => {
+      const hojeIso = new Date().toISOString().slice(0, 10);
+      const atualizacoes = new Map<string, string | null>();
+
+      for (const c of compromissos) {
+        if (ativar) {
+          // Só faz sentido (re)agendar para compromissos ainda não
+          // pagos e com vencimento no futuro. `agendarNotificacaoVencimento`
+          // já lê a preferência global — que a essa altura Preferencias.tsx
+          // já gravou como `true` —, agenda e registra no histórico.
+          if (c.pago || c.dataVencimento < hojeIso || c.notificacaoId) continue;
+          const novoId = await agendarNotificacaoVencimento(c.nome, c.valor, c.dataVencimento, c.id);
+          if (novoId) atualizacoes.set(c.id, novoId);
+        } else {
+          if (!c.notificacaoId) continue;
+          await cancelarNotificacao(c.notificacaoId);
+          atualizacoes.set(c.id, null);
+        }
+      }
+
+      if (atualizacoes.size === 0) return;
+
+      for (const [id, notifId] of atualizacoes) {
+        await atualizarNotificacaoIdCompromisso(id, notifId);
+      }
+      setCompromissos((prev) =>
+        prev.map((c) => (atualizacoes.has(c.id) ? { ...c, notificacaoId: atualizacoes.get(c.id) ?? null } : c))
+      );
+    },
+    [compromissos]
+  );
+
   const value = useMemo(
     () => ({
       compromissos,
@@ -164,6 +214,7 @@ export function CompromissosProvider({ children }: { children: ReactNode }) {
       pagarCompromissoComTransacao,
       desmarcarPagoCompromisso,
       removerCompromisso,
+      ressincronizarNotificacoes,
     }),
     [
       compromissos,
@@ -174,6 +225,7 @@ export function CompromissosProvider({ children }: { children: ReactNode }) {
       pagarCompromissoComTransacao,
       desmarcarPagoCompromisso,
       removerCompromisso,
+      ressincronizarNotificacoes,
     ]
   );
 

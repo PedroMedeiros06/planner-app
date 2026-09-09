@@ -11,7 +11,13 @@ type PerfilContextValue = {
   atualizarPerfil: (patch: Partial<PerfilUsuario>) => Promise<void>;
 };
 
-const PERFIL_VAZIO: PerfilUsuario = { nome: "", email: null, avatarUri: null };
+const PERFIL_VAZIO: PerfilUsuario = {
+  nome: "",
+  email: null,
+  avatarUri: null,
+  notificacoesAtivas: true,
+  temaPreferido: "sistema",
+};
 
 const PerfilContext = createContext<PerfilContextValue | null>(null);
 

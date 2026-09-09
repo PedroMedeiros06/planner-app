@@ -1,4 +1,4 @@
-import { colors } from "@/theme/colors";
+import { useThemeColors } from "@/theme/useThemeColors";
 import { moderateScale } from "@/utils/scale";
 import { FormatToCurrency } from "@/utils/formatNumber";
 import { View, Text, ActivityIndicator } from "react-native";
@@ -41,6 +41,7 @@ function useFatiasComOffset(fatias: FatiaExibicao[]) {
 }
 
 function DistribuicaoOrcamentoBase({ filtrosParaQuery }: Props) {
+  const colors = useThemeColors();
   const cardTitleSize = moderateScale(15);
   const legendTextSize = moderateScale(11);
   const centerValueSize = moderateScale(12);

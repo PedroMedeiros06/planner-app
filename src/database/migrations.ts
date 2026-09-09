@@ -502,6 +502,54 @@ const MIGRATIONS: Migration[] = [
       await db.execAsync(`ALTER TABLE perfil_usuario ADD COLUMN avatar_uri TEXT;`);
     },
   },
+  {
+    versao: 18,
+    descricao:
+      "Cria tabela notificacoes_historico: registro das notificações locais que o app agendou (lembretes e vencimentos de compromisso). Uma linha é gravada quando a notificação é AGENDADA (não quando dispara — ela pode disparar com o app fechado). A tela de histórico lista as que já passaram de `disparar_em` como recebidas; `lida` marca se o usuário já abriu o histórico depois dela chegar. `notificacao_id` casa com o id devolvido por scheduleNotificationAsync, para a linha ser removida se a notificação for cancelada antes de disparar; `origem`/`ref_id` apontam o compromisso/lembrete de origem.",
+    async executar(db) {
+      await db.execAsync(`
+        CREATE TABLE notificacoes_historico (
+          id TEXT PRIMARY KEY NOT NULL,
+          titulo TEXT NOT NULL,
+          corpo TEXT NOT NULL,
+          disparar_em TEXT NOT NULL,
+          criada_em TEXT NOT NULL,
+          lida INTEGER NOT NULL DEFAULT 0,
+          notificacao_id TEXT,
+          origem TEXT NOT NULL,
+          ref_id TEXT
+        );
+      `);
+      // Consulta principal da tela e do contador de não-lidas: ordena
+      // por disparar_em e filtra por lida — índice cobre os dois.
+      await db.execAsync(
+        `CREATE INDEX idx_notificacoes_historico_disparar_em ON notificacoes_historico (disparar_em DESC);`
+      );
+      await db.execAsync(
+        `CREATE INDEX idx_notificacoes_historico_notificacao_id ON notificacoes_historico (notificacao_id);`
+      );
+    },
+  },
+  {
+    versao: 19,
+    descricao:
+      "Adiciona notificacoes_ativas em perfil_usuario (single-row): preferência global do usuário para receber ou não notificações locais (lembretes e vencimentos de compromisso). DEFAULT 1 = ativas — comportamento atual preservado para quem já usa o app. Quando 0, agendarNotificacao* não agenda nada.",
+    async executar(db) {
+      await db.execAsync(
+        `ALTER TABLE perfil_usuario ADD COLUMN notificacoes_ativas INTEGER NOT NULL DEFAULT 1;`
+      );
+    },
+  },
+  {
+    versao: 20,
+    descricao:
+      "Adiciona tema_preferido em perfil_usuario (single-row): preferência de aparência escolhida pelo usuário na tela de Perfil. Valores: 'sistema' (segue o tema do aparelho — default), 'claro', 'escuro'. O app era dark-only; DEFAULT 'sistema' preserva o comportamento de quem já usa (que na prática era sempre escuro).",
+    async executar(db) {
+      await db.execAsync(
+        `ALTER TABLE perfil_usuario ADD COLUMN tema_preferido TEXT NOT NULL DEFAULT 'sistema';`
+      );
+    },
+  },
 ];
 
 export async function rodarMigrations(db: SQLiteDatabase): Promise<void> {

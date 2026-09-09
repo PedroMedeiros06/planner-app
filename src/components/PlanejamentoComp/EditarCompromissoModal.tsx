@@ -1,4 +1,4 @@
-import { colors } from "@/theme/colors";
+import { useThemeColors } from "@/theme/useThemeColors";
 import { moderateScale } from "@/utils/scale";
 import { Ionicons } from "@expo/vector-icons";
 import { View, Text, Pressable, TextInput } from "react-native";
@@ -9,13 +9,16 @@ import { SeletorData } from "@/components/common/SeletorData";
 import { ModalCentralizado } from "@/components/common/ModalCentralizado";
 import { useDialogo } from "@/context/DialogoContext";
 
+// Paleta fixa de "cor do ícone do compromisso" — são rótulos de cor
+// escolhidos pelo usuário, não tokens do tema, então não mudam com
+// claro/escuro (mesma lógica das cores das categorias).
 const ICONES_DISPONIVEIS: { nome: keyof typeof Ionicons.glyphMap; cor: string }[] = [
-  { nome: "home-outline", cor: colors["active-icon"] },
+  { nome: "home-outline", cor: "#7C3AED" },
   { nome: "water-outline", cor: "#378ADD" },
-  { nome: "flash-outline", cor: colors["warn-color"] },
-  { nome: "wifi-outline", cor: colors["sucess-color"] },
+  { nome: "flash-outline", cor: "#F59E0B" },
+  { nome: "wifi-outline", cor: "#10B981" },
   { nome: "card-outline", cor: "#E24B4A" },
-  { nome: "document-text-outline", cor: colors["desactived-text"] },
+  { nome: "document-text-outline", cor: "#8A94A3" },
 ];
 
 type Props = {
@@ -27,6 +30,7 @@ type Props = {
 };
 
 function EditarCompromissoModalBase({ visivel, compromissoEditando, onFechar, onSalvar, onExcluir }: Props) {
+  const colors = useThemeColors();
   const { confirmar, avisar } = useDialogo();
   const titleSize = moderateScale(17);
   const labelSize = moderateScale(11);

@@ -54,6 +54,10 @@ export type FiltrosTransacao = {
   categoriasIds?: (CategoriaId | null)[] | null; // inclui `null` explícito para filtrar "sem categoria"; null/undefined = todas
   dataInicio?: string | null; // ISO aaaa-mm-dd, inclusive
   dataFim?: string | null; // ISO aaaa-mm-dd, inclusive
+  // Texto livre digitado na barra de busca. Quando presente (após trim,
+  // não vazio) casa por substring, sem diferenciar maiúsculas, tanto no
+  // nome quanto no subtítulo da transação. null/undefined/"" = sem busca.
+  texto?: string | null;
 };
 
 /**
@@ -97,6 +101,16 @@ function montarClausulaFiltros(filtros: FiltrosTransacao): { where: string; para
   if (filtros.dataFim) {
     condicoes.push(`t.data <= ?`);
     params.push(filtros.dataFim);
+  }
+
+  const textoBusca = filtros.texto?.trim();
+  if (textoBusca) {
+    // `LIKE` do SQLite já é case-insensitive para ASCII; escapamos os
+    // curingas do próprio LIKE (`%` e `_`) para que o usuário possa
+    // buscar por esses caracteres literalmente, usando `\` como escape.
+    const termo = `%${textoBusca.replace(/[\\%_]/g, "\\$&")}%`;
+    condicoes.push(`(t.nome LIKE ? ESCAPE '\\' OR t.subtitulo LIKE ? ESCAPE '\\')`);
+    params.push(termo, termo);
   }
 
   return {

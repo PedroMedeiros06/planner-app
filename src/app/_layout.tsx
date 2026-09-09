@@ -8,6 +8,7 @@ import { NavigationProvider } from "@/context/NavigationContext";
 import { MetasProvider } from "@/context/MetasContext";
 import { CompromissosProvider } from "@/context/CompromissosContext";
 import { LembretesProvider } from "@/context/LembretesContext";
+import { NotificacoesProvider } from "@/context/NotificacoesContext";
 import { SimulacoesProvider } from "@/context/SimulacoesContext";
 import { CotacoesProvider } from "@/context/CotacoesContext";
 import { TaxasProvider } from "@/context/TaxasContext";
@@ -25,15 +26,16 @@ export default function RootLayout() {
   if (!LoadedFonts) return null
 
   return (
-    <ThemeProvider name="default">
       <NavigationProvider>
        <DialogoProvider>
         <ResetAppProvider>
           <PerfilProvider>
+           <ThemeProvider>
             <TransacoesProvider>
               <MetasProvider>
                 <CompromissosProvider>
                   <LembretesProvider>
+                   <NotificacoesProvider>
                     <SimulacoesProvider>
                       <CotacoesProvider>
                        <TaxasProvider>
@@ -47,14 +49,15 @@ export default function RootLayout() {
                        </TaxasProvider>
                       </CotacoesProvider>
                     </SimulacoesProvider>
+                   </NotificacoesProvider>
                   </LembretesProvider>
                 </CompromissosProvider>
               </MetasProvider>
             </TransacoesProvider>
+           </ThemeProvider>
           </PerfilProvider>
         </ResetAppProvider>
        </DialogoProvider>
       </NavigationProvider>
-    </ThemeProvider>
   );
 }

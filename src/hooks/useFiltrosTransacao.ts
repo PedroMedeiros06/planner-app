@@ -11,6 +11,7 @@ export type EstadoFiltros = {
   periodoPreset: PeriodoPreset;
   periodoInicioPersonalizado: string | null; // ISO, só relevante quando periodoPreset === "personalizado"
   periodoFimPersonalizado: string | null;
+  textoBusca: string; // "" = sem busca por texto; casa por substring em nome/subtítulo
 };
 
 // "esteMes" é o preset NEUTRO padrão: telas de análise e listas abrem
@@ -26,6 +27,7 @@ function montarEstadoInicial(presetInicial: PeriodoPreset): EstadoFiltros {
     periodoPreset: presetInicial,
     periodoInicioPersonalizado: null,
     periodoFimPersonalizado: null,
+    textoBusca: "",
   };
 }
 
@@ -122,6 +124,14 @@ export function useFiltrosTransacao(opcoes: OpcoesHook = {}) {
     setFiltros((prev) => ({ ...prev, categoriasSelecionadas: [] }));
   }, []);
 
+  const definirTextoBusca = useCallback((texto: string) => {
+    setFiltros((prev) => ({ ...prev, textoBusca: texto }));
+  }, []);
+
+  const limparTextoBusca = useCallback(() => {
+    setFiltros((prev) => ({ ...prev, textoBusca: "" }));
+  }, []);
+
   const definirPeriodoPreset = useCallback((preset: PeriodoPreset) => {
     setFiltros((prev) => ({
       ...prev,
@@ -155,14 +165,17 @@ export function useFiltrosTransacao(opcoes: OpcoesHook = {}) {
     filtros.periodoFimPersonalizado
   );
 
+  const textoBuscaNormalizado = filtros.textoBusca.trim();
+
   const filtrosParaQuery: FiltrosTransacao = useMemo(
     () => ({
       bancosIds: filtros.bancosSelecionados.length > 0 ? filtros.bancosSelecionados : null,
       categoriasIds: filtros.categoriasSelecionadas.length > 0 ? filtros.categoriasSelecionadas : null,
       dataInicio: periodoInicio,
       dataFim: periodoFim,
+      texto: textoBuscaNormalizado.length > 0 ? textoBuscaNormalizado : null,
     }),
-    [filtros.bancosSelecionados, filtros.categoriasSelecionadas, periodoInicio, periodoFim]
+    [filtros.bancosSelecionados, filtros.categoriasSelecionadas, periodoInicio, periodoFim, textoBuscaNormalizado]
   );
 
   // "O usuário mexeu em algum filtro?" — banco/categoria escolhidos, ou
@@ -171,7 +184,8 @@ export function useFiltrosTransacao(opcoes: OpcoesHook = {}) {
   const possuiFiltrosAtivos =
     filtros.bancosSelecionados.length > 0 ||
     filtros.categoriasSelecionadas.length > 0 ||
-    filtros.periodoPreset !== presetNeutro;
+    filtros.periodoPreset !== presetNeutro ||
+    textoBuscaNormalizado.length > 0;
 
   // "A consulta precisa de recorte?" — tem banco/categoria, OU o
   // período não é "tudo". Diferente de possuiFiltrosAtivos: uma tela
@@ -181,7 +195,8 @@ export function useFiltrosTransacao(opcoes: OpcoesHook = {}) {
   const consultaTemRecorte =
     filtros.bancosSelecionados.length > 0 ||
     filtros.categoriasSelecionadas.length > 0 ||
-    filtros.periodoPreset !== "tudo";
+    filtros.periodoPreset !== "tudo" ||
+    textoBuscaNormalizado.length > 0;
 
   return {
     filtros,
@@ -189,6 +204,8 @@ export function useFiltrosTransacao(opcoes: OpcoesHook = {}) {
     limparFiltroBanco,
     alternarCategoria,
     limparFiltroCategoria,
+    definirTextoBusca,
+    limparTextoBusca,
     definirPeriodoPreset,
     definirPeriodoPersonalizado,
     limparTodosFiltros,

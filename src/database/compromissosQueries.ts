@@ -77,6 +77,22 @@ export async function atualizarCompromisso(
 }
 
 /**
+ * Grava APENAS o `notificacao_id` de um compromisso, sem tocar nos
+ * demais campos. Usado quando a preferência global de notificações é
+ * alternada e o app precisa reagendar/cancelar em massa (ver
+ * Preferencias.tsx). `null` = compromisso sem notificação agendada.
+ */
+export async function atualizarNotificacaoIdCompromisso(
+  id: string,
+  notificacaoId: string | null
+): Promise<void> {
+  return executarNaFila(async () => {
+    const db = await getDatabase();
+    await db.runAsync(`UPDATE compromissos SET notificacao_id = ? WHERE id = ?;`, [notificacaoId, id]);
+  });
+}
+
+/**
  * Vincula um compromisso a uma transação real já existente — é o que
  * significa "pago" a partir da migration 9. Quem cria/escolhe a
  * transação é a UI (ver ProximosCompromissos + NovaTransacaoModal); esta

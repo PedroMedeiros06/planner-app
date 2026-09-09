@@ -1,4 +1,4 @@
-import { colors } from "@/theme/colors";
+import { useThemeColors } from "@/theme/useThemeColors";
 import { moderateScale } from "@/utils/scale";
 import { FormatToCurrency } from "@/utils/formatNumber";
 import { Ionicons } from "@expo/vector-icons";
@@ -23,6 +23,7 @@ const AnelProgressoIcone = memo(function AnelProgressoIcone({
   cor: string;
   icone: keyof typeof Ionicons.glyphMap;
 }) {
+  const colors = useThemeColors();
   const tamanho = moderateScale(58);
   const espessura = moderateScale(4);
   const raio = (tamanho - espessura) / 2;
@@ -58,6 +59,7 @@ const AnelProgressoIcone = memo(function AnelProgressoIcone({
 });
 
 const MetaCard = memo(function MetaCard({ meta, onLongPress }: { meta: Meta; onLongPress: (meta: Meta) => void }) {
+  const colors = useThemeColors();
   const nomeSize = moderateScale(15);
   const percentualSize = moderateScale(11);
   const valorSize = moderateScale(15);
@@ -143,6 +145,7 @@ const CardEstatistica = memo(function CardEstatistica({
 });
 
 function MinhasMetasBase() {
+  const colors = useThemeColors();
   const sectionTitleSize = moderateScale(17);
   const actionTextSize = moderateScale(12);
   const emptyTitleSize = moderateScale(13);

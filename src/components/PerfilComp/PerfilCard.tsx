@@ -1,4 +1,4 @@
-import { colors } from "@/theme/colors";
+import { useThemeColors } from "@/theme/useThemeColors";
 import { moderateScale } from "@/utils/scale";
 import { Ionicons } from "@expo/vector-icons";
 import { View, Text, Pressable, TextInput } from "react-native";
@@ -10,6 +10,7 @@ import { ModalCentralizado } from "@/components/common/ModalCentralizado";
 import { escolherFotoPerfil, apagarFotoPerfil } from "@/utils/fotoPerfil";
 
 function PerfilCardBase() {
+  const colors = useThemeColors();
   const nameSize = moderateScale(18);
   const emailSize = moderateScale(12);
   const modalTitleSize = moderateScale(16);

@@ -1,4 +1,4 @@
-import { colors } from "@/theme/colors";
+import { useThemeColors } from "@/theme/useThemeColors";
 import { moderateScale } from "@/utils/scale";
 import { Ionicons } from "@expo/vector-icons";
 import { View, Text, Pressable, ScrollView } from "react-native";
@@ -14,22 +14,27 @@ type Props = {
 
 type ItemLista = { id: CategoriaId | null; nome: string; icone: keyof typeof Ionicons.glyphMap; cor: string };
 
-const ITEM_SEM_CATEGORIA: ItemLista = {
+// A `cor` é resolvida dentro do componente (depende do tema atual); no
+// nível de módulo fica só a estrutura estável do item.
+const ITEM_SEM_CATEGORIA: Omit<ItemLista, "cor"> = {
   id: null,
   nome: "Sem categoria",
   icone: "help-circle-outline",
-  cor: colors["desactived-text"],
 };
 
 // Altura máxima da lista dentro do card do dropdown — acima disso rola.
 const MAX_ALTURA_LISTA = 260;
 
 function SeletorCategoriaMultiploBase({ categoriasSelecionadas, onAlternar, onLimpar }: Props) {
+  const colors = useThemeColors();
   const triggerTextSize = moderateScale(12);
   const itemTextSize = moderateScale(13);
   const rodapeTextSize = moderateScale(12);
 
-  const itens: ItemLista[] = [ITEM_SEM_CATEGORIA, ...CATEGORIAS];
+  const itens: ItemLista[] = [
+    { ...ITEM_SEM_CATEGORIA, cor: colors["desactived-text"] },
+    ...CATEGORIAS,
+  ];
   const temSelecao = categoriasSelecionadas.length > 0;
 
   const rotulo =

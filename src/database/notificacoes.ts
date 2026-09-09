@@ -1,5 +1,10 @@
 import { Platform } from "react-native";
 import Constants, { ExecutionEnvironment } from "expo-constants";
+import {
+  registrarNotificacao,
+  removerPorNotificacaoId,
+} from "./notificacoesHistoricoQueries";
+import { obterPerfil } from "./perfilQueries";
 
 /**
  * Notificações locais agendadas pelo próprio app — diferente de ler
@@ -47,6 +52,22 @@ function carregarModuloNotifications(): Promise<NotificationsModule> {
 let permissaoSolicitada = false;
 let avisoExpoGoMostrado = false;
 
+/**
+ * Lê a preferência global de notificações do perfil (coluna
+ * `notificacoes_ativas`, migration 19). Se o usuário desativou, o app
+ * não deve agendar nada. Falha de leitura = assume ativo (não silencia
+ * notificação por causa de um erro de banco pontual).
+ */
+async function notificacoesPermitidasPeloUsuario(): Promise<boolean> {
+  try {
+    const perfil = await obterPerfil();
+    return perfil.notificacoesAtivas;
+  } catch (erro) {
+    console.warn("[notificacoes] Falha ao ler preferência de notificações (assumindo ativa):", erro);
+    return true;
+  }
+}
+
 function avisarLimitacaoExpoGo() {
   if (avisoExpoGoMostrado) return;
   avisoExpoGoMostrado = true;
@@ -68,22 +89,42 @@ async function garantirPermissao(Notifications: NotificationsModule): Promise<bo
   return status === "granted";
 }
 
+/** Formata um Date local como "aaaa-mm-ddTHH:MM:SS" (sem timezone) — é
+ * assim que o histórico guarda `disparar_em`, comparável como texto com
+ * `new Date().toISOString()` só na ordem de grandeza suficiente para o
+ * app (o histórico não precisa de precisão de fuso). */
+function isoLocalSemFuso(data: Date): string {
+  const p = (n: number) => String(n).padStart(2, "0");
+  return (
+    `${data.getFullYear()}-${p(data.getMonth() + 1)}-${p(data.getDate())}` +
+    `T${p(data.getHours())}:${p(data.getMinutes())}:${p(data.getSeconds())}`
+  );
+}
+
 /**
  * Agenda uma notificação local para o dia do vencimento de um
  * compromisso, às 9h. Retorna o ID da notificação agendada, ou null
  * se não foi possível agendar (Expo Go, permissão negada, ou data
  * já passada) — nesses casos o compromisso ainda deve ser salvo
  * normalmente por quem chama esta função.
+ *
+ * Quando agenda com sucesso, também grava a notificação no histórico
+ * (`notificacoes_historico`) para aparecer na tela de notificações da
+ * Home. `refId` é o id do compromisso, usado para casar a linha do
+ * histórico com o item de origem.
  */
 export async function agendarNotificacaoVencimento(
   nomeCompromisso: string,
   valor: number,
-  dataVencimentoIso: string
+  dataVencimentoIso: string,
+  refId: string | null = null
 ): Promise<string | null> {
   if (rodandoNoExpoGo) {
     avisarLimitacaoExpoGo();
     return null;
   }
+
+  if (!(await notificacoesPermitidasPeloUsuario())) return null;
 
   try {
     const Notifications = await carregarModuloNotifications();
@@ -97,11 +138,13 @@ export async function agendarNotificacaoVencimento(
     if (dataNotificacao.getTime() <= Date.now()) return null;
 
     const valorFormatado = valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    const titulo = "Compromisso vence hoje";
+    const corpo = `${nomeCompromisso} — ${valorFormatado}`;
 
     const notificacaoId = await Notifications.scheduleNotificationAsync({
       content: {
-        title: "Compromisso vence hoje",
-        body: `${nomeCompromisso} — ${valorFormatado}`,
+        title: titulo,
+        body: corpo,
         sound: Platform.OS === "ios" ? "default" : undefined,
       },
       trigger: {
@@ -109,6 +152,21 @@ export async function agendarNotificacaoVencimento(
         date: dataNotificacao,
       },
     });
+
+    // Histórico é acessório: se falhar, a notificação já foi agendada e
+    // o compromisso deve ser salvo do mesmo jeito.
+    try {
+      await registrarNotificacao({
+        titulo,
+        corpo,
+        disparaEm: isoLocalSemFuso(dataNotificacao),
+        notificacaoId,
+        origem: "compromisso",
+        refId,
+      });
+    } catch (erroHistorico) {
+      console.warn("[notificacoes] Falha ao registrar notificação no histórico:", erroHistorico);
+    }
 
     return notificacaoId;
   } catch (erro) {
@@ -133,12 +191,15 @@ export async function agendarNotificacaoLembrete(
   titulo: string,
   descricao: string | null,
   dataIso: string,
-  horaHHMM: string
+  horaHHMM: string,
+  refId: string | null = null
 ): Promise<string | null> {
   if (rodandoNoExpoGo) {
     avisarLimitacaoExpoGo();
     return null;
   }
+
+  if (!(await notificacoesPermitidasPeloUsuario())) return null;
 
   try {
     const Notifications = await carregarModuloNotifications();
@@ -152,10 +213,12 @@ export async function agendarNotificacaoLembrete(
 
     if (dataNotificacao.getTime() <= Date.now()) return null;
 
+    const corpo = descricao?.trim() ? descricao.trim() : "Lembrete";
+
     const notificacaoId = await Notifications.scheduleNotificationAsync({
       content: {
         title: titulo,
-        body: descricao?.trim() ? descricao.trim() : "Lembrete",
+        body: corpo,
         sound: Platform.OS === "ios" ? "default" : undefined,
       },
       trigger: {
@@ -163,6 +226,19 @@ export async function agendarNotificacaoLembrete(
         date: dataNotificacao,
       },
     });
+
+    try {
+      await registrarNotificacao({
+        titulo,
+        corpo,
+        disparaEm: isoLocalSemFuso(dataNotificacao),
+        notificacaoId,
+        origem: "lembrete",
+        refId,
+      });
+    } catch (erroHistorico) {
+      console.warn("[notificacoes] Falha ao registrar notificação no histórico:", erroHistorico);
+    }
 
     return notificacaoId;
   } catch (erro) {
@@ -174,9 +250,25 @@ export async function agendarNotificacaoLembrete(
 /**
  * Cancela uma notificação previamente agendada. Seguro chamar mesmo
  * se o ID for null, se já não existir mais, ou se estivermos no Expo Go.
+ *
+ * Também remove a linha correspondente do histórico — MAS só se a
+ * notificação ainda não tiver disparado (ver `removerPorNotificacaoId`).
+ * Se já chegou ao usuário, permanece no histórico mesmo que o
+ * compromisso/lembrete seja editado ou excluído depois.
  */
 export async function cancelarNotificacao(notificacaoId: string | null): Promise<void> {
-  if (!notificacaoId || rodandoNoExpoGo) return;
+  if (!notificacaoId) return;
+
+  // A remoção do histórico independe do Expo Go — a linha pode ter sido
+  // gravada num build anterior (dev/produção) e o app estar rodando no
+  // Expo Go agora.
+  try {
+    await removerPorNotificacaoId(notificacaoId);
+  } catch (erro) {
+    console.warn("[notificacoes] Falha ao remover notificação do histórico:", erro);
+  }
+
+  if (rodandoNoExpoGo) return;
 
   try {
     const Notifications = await carregarModuloNotifications();

@@ -1,4 +1,4 @@
-import { colors } from "@/theme/colors";
+import { useThemeColors } from "@/theme/useThemeColors";
 import { moderateScale } from "@/utils/scale";
 import { FormatToCurrency } from "@/utils/formatNumber";
 import { Ionicons } from "@expo/vector-icons";
@@ -82,6 +82,7 @@ function rotuloVariacao(realizado: number, previsto: number): string {
 }
 
 function AnaliseOrcamentoBase({ anoExibido, mesExibido }: Props) {
+  const colors = useThemeColors();
   const cardTitleSize = moderateScale(15);
   const descricaoSize = moderateScale(11);
 

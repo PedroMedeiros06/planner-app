@@ -1,8 +1,8 @@
-import { colors } from "@/theme/colors";
+import { useThemeColors } from "@/theme/useThemeColors";
 import { moderateScale } from "@/utils/scale";
 import { FormatToCurrency } from "@/utils/formatNumber";
 import { Ionicons } from "@expo/vector-icons";
-import { Text, View, Pressable, FlatList, ScrollView } from "react-native";
+import { Text, View, Pressable, FlatList, ScrollView, TextInput } from "react-native";
 import { memo, useCallback, useEffect, useState } from "react";
 import { useTransacoes, Transacao } from "@/context/TransacoesContext";
 import { EditarTransacaoModal } from "@/components/TransacoesComp/EditarTransacaoModal";
@@ -42,6 +42,7 @@ const TransacaoItem = memo(function TransacaoItem({
   isLast: boolean;
   onLongPress: (transacao: Transacao) => void;
 }) {
+  const colors = useThemeColors();
   const itemTitleSize = moderateScale(14);
   const itemSubtitleSize = moderateScale(12);
   const bankLogoSize = moderateScale(24);
@@ -102,6 +103,7 @@ const TransacaoItem = memo(function TransacaoItem({
 });
 
 function UltimasTransacoesBase() {
+  const colors = useThemeColors();
   const sectionTitleSize = moderateScale(20);
   const actionTextSize = moderateScale(12);
   const itemTitleSize = moderateScale(14);
@@ -117,6 +119,8 @@ function UltimasTransacoesBase() {
     limparFiltroBanco,
     alternarCategoria,
     limparFiltroCategoria,
+    definirTextoBusca,
+    limparTextoBusca,
     definirPeriodoPreset,
     definirPeriodoPersonalizado,
     consultaTemRecorte,
@@ -126,6 +130,17 @@ function UltimasTransacoesBase() {
   const [bancos, setBancos] = useState<Banco[]>([]);
   const [modalPeriodoAberto, setModalPeriodoAberto] = useState(false);
   const [transacaoSelecionada, setTransacaoSelecionada] = useState<Transacao | null>(null);
+  // A lupa alterna entre a barra de filtros (default) e o campo de
+  // busca por texto. Fechar a busca sempre zera o texto digitado, para
+  // não deixar um recorte "escondido" atrás da barra de filtros.
+  const [buscaAberta, setBuscaAberta] = useState(false);
+
+  const alternarBusca = useCallback(() => {
+    setBuscaAberta((aberta) => {
+      if (aberta) limparTextoBusca();
+      return !aberta;
+    });
+  }, [limparTextoBusca]);
 
   const [transacoesFiltradas, setTransacoesFiltradas] = useState<Transacao[]>([]);
   const [carregandoFiltro, setCarregandoFiltro] = useState(false);
@@ -230,35 +245,73 @@ function UltimasTransacoesBase() {
         </View>
 
         <View className="flex-row items-center justify-between gap-y-2">
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 6, flexGrow: 1 }}
-            className="flex-1 pr-1"
+          {buscaAberta ? (
+            <View className="flex-1 flex-row items-center gap-2 pr-1 bg-input-background border border-input-border rounded-xl px-3 py-2">
+              <Ionicons name="search-outline" color={colors["second-text"]} size={16} />
+              <TextInput
+                value={filtros.textoBusca}
+                onChangeText={definirTextoBusca}
+                placeholder="Buscar por nome ou descrição"
+                placeholderTextColor={colors["desactived-text"]}
+                autoFocus
+                returnKeyType="search"
+                style={{ flex: 1, color: colors["main-text"], fontSize: moderateScale(13), padding: 0 }}
+                className="font-Inter-Regular"
+                accessibilityLabel="Campo de busca de transações"
+              />
+              {filtros.textoBusca.length > 0 && (
+                <Pressable
+                  onPress={limparTextoBusca}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel="Limpar busca"
+                >
+                  <Ionicons name="close-circle" color={colors["second-text"]} size={16} />
+                </Pressable>
+              )}
+            </View>
+          ) : (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 6, flexGrow: 1 }}
+              className="flex-1 pr-1"
+            >
+              <SeletorBancoMultiplo
+                bancos={bancos}
+                bancosSelecionados={filtros.bancosSelecionados}
+                onAlternar={alternarBanco}
+                onLimpar={limparFiltroBanco}
+              />
+
+              <DropdownPeriodo
+                periodoAtivo={filtros.periodoPreset}
+                rotuloPersonalizado={rotuloPersonalizado}
+                onSelecionarPreset={definirPeriodoPreset}
+                onAbrirPersonalizado={() => setModalPeriodoAberto(true)}
+              />
+
+              <SeletorCategoriaMultiplo
+                categoriasSelecionadas={filtros.categoriasSelecionadas}
+                onAlternar={alternarCategoria}
+                onLimpar={limparFiltroCategoria}
+              />
+            </ScrollView>
+          )}
+
+          <Pressable
+            onPress={alternarBusca}
+            className="p-1 active:opacity-60"
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityState={{ expanded: buscaAberta }}
+            accessibilityLabel={buscaAberta ? "Fechar busca e voltar aos filtros" : "Pesquisar transações"}
           >
-            <SeletorBancoMultiplo
-              bancos={bancos}
-              bancosSelecionados={filtros.bancosSelecionados}
-              onAlternar={alternarBanco}
-              onLimpar={limparFiltroBanco}
+            <Ionicons
+              name={buscaAberta ? "close" : "search-outline"}
+              color={colors["second-text"]}
+              size={18}
             />
-
-            <DropdownPeriodo
-              periodoAtivo={filtros.periodoPreset}
-              rotuloPersonalizado={rotuloPersonalizado}
-              onSelecionarPreset={definirPeriodoPreset}
-              onAbrirPersonalizado={() => setModalPeriodoAberto(true)}
-            />
-
-            <SeletorCategoriaMultiplo
-              categoriasSelecionadas={filtros.categoriasSelecionadas}
-              onAlternar={alternarCategoria}
-              onLimpar={limparFiltroCategoria}
-            />
-          </ScrollView>
-
-          <Pressable className="p-1 active:opacity-60" hitSlop={8} accessibilityRole="button" accessibilityLabel="Pesquisar transações">
-            <Ionicons name="search-outline" color={colors["second-text"]} size={18} />
           </Pressable>
         </View>
       </View>

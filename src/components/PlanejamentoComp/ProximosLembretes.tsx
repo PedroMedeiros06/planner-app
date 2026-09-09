@@ -1,6 +1,6 @@
 import { moderateScale } from "@/utils/scale";
 import { Ionicons } from "@expo/vector-icons";
-import { colors } from "@/theme/colors";
+import { useThemeColors } from "@/theme/useThemeColors";
 import { View, Text, Pressable } from "react-native";
 import { memo, useCallback, useState } from "react";
 import { useLembretes } from "@/context/LembretesContext";
@@ -24,6 +24,7 @@ const LembreteItem = memo(function LembreteItem({
   lembrete: Lembrete;
   onLongPress: (l: Lembrete) => void;
 }) {
+  const colors = useThemeColors();
   const itemTitleSize = moderateScale(13);
   const itemSubtitleSize = moderateScale(10);
   const badgeSize = moderateScale(9);
@@ -81,6 +82,7 @@ const LembreteItem = memo(function LembreteItem({
 });
 
 function ProximosLembretesBase() {
+  const colors = useThemeColors();
   const cardTitleSize = moderateScale(15);
   const { lembretes, carregando, adicionarLembrete, editarLembrete, removerLembrete } = useLembretes();
 

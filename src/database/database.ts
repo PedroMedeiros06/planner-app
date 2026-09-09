@@ -99,6 +99,8 @@ async function droparTodasAsTabelas(db: SQLite.SQLiteDatabase): Promise<void> {
   await db.execAsync(`DROP TABLE IF EXISTS regras_categorizacao;`);
   // Perfil local também é apagado, para voltar ao estado de "primeiro uso".
   await db.execAsync(`DROP TABLE IF EXISTS perfil_usuario;`);
+  // Histórico de notificações que o app deu neste aparelho.
+  await db.execAsync(`DROP TABLE IF EXISTS notificacoes_historico;`);
   await db.execAsync(`PRAGMA user_version = 0;`);
 }
 

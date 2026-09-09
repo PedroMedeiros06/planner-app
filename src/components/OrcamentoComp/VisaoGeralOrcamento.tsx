@@ -1,4 +1,4 @@
-import { colors } from "@/theme/colors";
+import { useThemeColors } from "@/theme/useThemeColors";
 import { moderateScale } from "@/utils/scale";
 import { FormatToCurrency } from "@/utils/formatNumber";
 import { Ionicons } from "@expo/vector-icons";
@@ -42,6 +42,7 @@ function useFatiasComOffset(fatias: FatiaResumo[]) {
 }
 
 function VisaoGeralOrcamentoBase({ anoExibido, mesExibido, onSelecionarMesAno, onDefinirLimite }: Props) {
+  const colors = useThemeColors();
   const cardTitleSize = moderateScale(15);
   const centerValueSize = moderateScale(19);
   const centerLabelSize = moderateScale(11);

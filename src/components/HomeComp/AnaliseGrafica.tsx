@@ -1,4 +1,4 @@
-import { colors } from "@/theme/colors";
+import { useThemeColors } from "@/theme/useThemeColors";
 import { moderateScale } from "@/utils/scale";
 import { FormatToCurrency } from "@/utils/formatNumber";
 import { Ionicons } from "@expo/vector-icons";
@@ -51,6 +51,7 @@ function useFatiasComOffset(fatias: FatiaExibicao[]) {
 }
 
 function AnaliseGraficaBase({ filtrosParaQuery }: Props) {
+  const colors = useThemeColors();
   const { width } = useWindowDimensions();
   const isSmallDevice = width < 375;
 
@@ -89,7 +90,11 @@ function AnaliseGraficaBase({ filtrosParaQuery }: Props) {
           const categoria = obterCategoriaPorId(r.categoriaId);
           return {
             nome: categoria?.nome ?? "Sem categoria",
-            cor: categoria?.cor ?? colors["desactived-text"],
+            // Fallback só para "Sem categoria": um cinza neutro fixo,
+            // legível nos dois temas. Não usar `colors` aqui — este
+            // efeito não deve depender do tema (senão vira dep do
+            // useEffect e refaz a query a cada troca de tema).
+            cor: categoria?.cor ?? "#8A94A3",
             valor: r.totalSaidas,
             percentual: totalGeral > 0 ? (r.totalSaidas / totalGeral) * 100 : 0,
           };

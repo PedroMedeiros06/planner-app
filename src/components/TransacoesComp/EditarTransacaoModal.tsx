@@ -1,4 +1,4 @@
-import { colors } from "@/theme/colors";
+import { useThemeColors } from "@/theme/useThemeColors";
 import { moderateScale } from "@/utils/scale";
 import { Ionicons } from "@expo/vector-icons";
 import { View, Text, Pressable, TextInput } from "react-native";
@@ -34,6 +34,7 @@ function EditarTransacaoModalBase({
   onSalvar,
   onExcluir,
 }: Props) {
+  const colors = useThemeColors();
   const titleSize = moderateScale(17);
   const labelSize = moderateScale(11);
   const inputTextSize = moderateScale(14);

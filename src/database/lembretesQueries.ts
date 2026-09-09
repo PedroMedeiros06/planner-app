@@ -73,3 +73,19 @@ export async function excluirLembrete(id: string): Promise<void> {
     await db.runAsync(`DELETE FROM lembretes WHERE id = ?;`, [id]);
   });
 }
+
+/**
+ * Grava APENAS o `notificacao_id` de um lembrete, sem tocar nos demais
+ * campos. Usado quando a preferência global de notificações é alternada
+ * e o app precisa reagendar/cancelar em massa (ver Preferencias.tsx).
+ * `null` = lembrete sem notificação agendada.
+ */
+export async function atualizarNotificacaoIdLembrete(
+  id: string,
+  notificacaoId: string | null
+): Promise<void> {
+  return executarNaFila(async () => {
+    const db = await getDatabase();
+    await db.runAsync(`UPDATE lembretes SET notificacao_id = ? WHERE id = ?;`, [notificacaoId, id]);
+  });
+}

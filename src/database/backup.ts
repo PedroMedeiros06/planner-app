@@ -38,6 +38,10 @@ const TABELAS_EM_ORDEM_DE_INSERCAO = [
   "limite_categoria",
   "meta_transacoes",
   "regras_categorizacao",
+  // `notificacoes_historico` fica DE FORA de propósito: é registro
+  // transitório de avisos que o app deu neste aparelho (os ids de
+  // notificação nem valeriam em outro device), não dado que o usuário
+  // criou e espera reencontrar após restaurar.
 ] as const;
 
 type LinhaCrua = Record<string, unknown>;

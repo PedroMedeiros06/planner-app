@@ -1,7 +1,7 @@
 import { moderateScale } from "@/utils/scale";
 import { FormatToCurrency } from "@/utils/formatNumber";
 import { Ionicons } from "@expo/vector-icons";
-import { colors } from "@/theme/colors";
+import { useThemeColors } from "@/theme/useThemeColors";
 import { View, Text, Pressable } from "react-native";
 import { memo, useCallback, useRef, useState } from "react";
 import { useCompromissos } from "@/context/CompromissosContext";
@@ -34,6 +34,7 @@ const CompromissoItem = memo(function CompromissoItem({
   // transação; se pago, o pai pede confirmação e remove o vínculo.
   onToggle: (c: Compromisso) => void;
 }) {
+  const colors = useThemeColors();
   const itemTitleSize = moderateScale(13);
   const itemSubtitleSize = moderateScale(10);
   const valueSize = moderateScale(13);
@@ -123,6 +124,7 @@ const CompromissoItem = memo(function CompromissoItem({
 });
 
 function ProximosCompromissosBase() {
+  const colors = useThemeColors();
   const cardTitleSize = moderateScale(15);
   const {
     compromissos,
